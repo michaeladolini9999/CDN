@@ -15,7 +15,7 @@ app.secret_key = 'your_secret_key'  # Replace with a strong secret key
 # MySQL connection
 def get_db_connection():
     config = configparser.ConfigParser()
-    config.read('/home/ubuntu/backup_cms/mysql.ini')
+    config.read('/home/ubuntu/CDN/backup_cms/mysql.ini')
 
     if 'backup_data' not in config:
         raise ValueError("Missing 'backup_data' section in mysql.ini")
