@@ -6,7 +6,7 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/backup_cms
+WorkingDirectory=/home/ubuntu/CDN/backup_cms
 ExecStart=/usr/bin/gunicorn -w 2 -b unix:/var/run/backup_cms/backup_cms.sock backup_cms:app
 
 [Install]
