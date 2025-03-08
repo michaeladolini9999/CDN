@@ -21,7 +21,7 @@ server {
 }
 
 server {
-    listen 5000 ssl http2;
+    listen 8000 ssl http2;
     server_name %s;
     ssl_certificate /home/ubuntu/CDN/ssl/%s/fullchain.pem;
     ssl_certificate_key /home/ubuntu/CDN/ssl/%s/privkey.pem;
@@ -79,7 +79,7 @@ server {
     echo ""
     for name in $server_names; do
         wild_domain="wild.${name#*.}"
-        printf "$server_block_template" "$name" "$wild_domain" "$wild_domain" "$wild_domain" "$name" "$wild_domain" "$wild_domain" "$wild_domain"
+        printf "$server_block_template" "$name" "$wild_domain" "$wild_domain" "$wild_domain" "$name" "$wild_domain" "$wild_domain" "$wild_domain" "$name" "$wild_domain" "$wild_domain" "$wild_domain"
     done
 } >> "$nginx_conf"
 

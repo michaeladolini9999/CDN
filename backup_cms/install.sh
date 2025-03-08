@@ -53,3 +53,5 @@ ALTER USER 'admin'@'%' IDENTIFIED WITH mysql_native_password BY 'stream';
 
 FLUSH PRIVILEGES;
 EOF
+
+bash /home/ubuntu/CDN/backup_cms/nginx.sh
