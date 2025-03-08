@@ -119,3 +119,7 @@ done
 
 echo "  }" >> "$nginx_conf"
 echo "}" >> "$nginx_conf"
+
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+sudo cp /home/ubuntu/CDN/nginx/nginx.conf /etc/nginx/nginx.conf
+sudo systemctl restart nginx.service
