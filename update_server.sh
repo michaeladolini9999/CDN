@@ -84,6 +84,12 @@ if [ ! -f "$old_config_file" ]; then
 else
     if cmp -s "$config_file" "$old_config_file"; then
         echo "server.json không thay đổi."
+
+        session="CDN"
+
+        if ! tmux has-session -t $session 2>/dev/null; then
+            bash /home/ubuntu/CDN/run.sh
+        fi
     else
         sudo cp "$config_file" /var/www/html/rtmp/
 
