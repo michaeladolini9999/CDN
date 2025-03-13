@@ -45,11 +45,30 @@ ExecStart=/usr/bin/gunicorn -w 2 -b unix:/var/run/cms/cms.sock cms:app
 WantedBy=multi-user.target
 EOF'
 
+sudo bash -c 'cat > /etc/systemd/system/update_server_startup.service <<EOF
+[Unit]
+Description=My Startup Script
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/ubuntu/CDN/update_server.sh
+RemainAfterExit=true
+User=ubuntu
+WorkingDirectory=/home/ubuntu
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
 sudo mkdir -p /var/run/cms
 sudo chown ubuntu:ubuntu /var/run/cms
 chmod 755 /var/run/cms
 sudo systemctl daemon-reload
 sudo systemctl enable cms.service
 sudo systemctl start cms.service
+sudo systemctl enable update_server_startup.service
+sudo systemctl start update_server_startup.service
 mkdir -p /home/ubuntu/CDN/log
 bash
