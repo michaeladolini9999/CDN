@@ -80,6 +80,7 @@ rtmp {
         chunk_size 4096;
         notify_method get;
         allow publish all;
+	drop_idle_publisher 60s;
 EOL
 
 declare -A apps_added
