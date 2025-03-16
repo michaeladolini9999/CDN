@@ -95,7 +95,7 @@ grep -oP '\["[^"]+","[^"]+' "$server_json" | while IFS="," read -r _ app_name; d
             hls on;
             hls_path /var/www/html/hls/$app_name;
             hls_cleanup off;
-            hls_continuous off;
+            hls_continuous on;
             hls_nested on;
             hls_fragment 1s;
             hls_playlist_length 3s;
