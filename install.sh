@@ -30,6 +30,8 @@ sudo apt install gunicorn jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql
 sudo apt remove apache2 -y
 bash mysql.sh
 
+ulimit -n 65535
+
 sudo bash -c 'cat > /etc/systemd/system/cms.service <<EOF
 [Unit]
 Description=Gunicorn instance to serve cms
