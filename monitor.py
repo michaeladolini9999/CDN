@@ -112,7 +112,7 @@ class LogProcessor:
             url = match.group('url')
             app_match = re.search(r'app=([\w\.]+)', url)
             stream_match = re.search(r'name=([\w\.]+)', url)
-            domain_match = re.search(r'tcurl=rtmp://([\w\.]+)', url)
+	    domain_match = re.search(r'tcurl=rtmp://([^/]+)', url)
             domain = domain_match.group(1) if domain_match else 'Unknown Domain'
 
             if app_match and stream_match:
