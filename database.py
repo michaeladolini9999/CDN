@@ -54,21 +54,25 @@ def get_last_sync_time(cursor, hostname=None):
         logging.error(f"Error retrieving last sync time: {e}")
         raise
 
-
 def insert_data(cursor, time, app, stream, requests, unique_users, data_sent, server):
-    """Insert data into the database, ignoring duplicates."""
+    """Insert or update data into the database."""
     try:
         query = """
-        INSERT IGNORE INTO data (time, server, app, stream, requests, unique_users, data_sent)
+        INSERT INTO data (time, server, app, stream, requests, unique_users, data_sent)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            requests = VALUES(requests),
+            unique_users = VALUES(unique_users),
+            data_sent = VALUES(data_sent)
         """
         cursor.execute(query, (time, server, app, stream, requests, unique_users, data_sent))
     except Exception as e:
-        logging.error(f"Error inserting data into the database: {e}")
+        logging.error(f"Error inserting or updating data in the database: {e}")
         raise
 
 
-def sync_to_local(file_path, db_config):
+
+def sync_to_local(file_path, db_config, hostname):
     """Synchronize data to the local database."""
     conn_local = None
     try:
@@ -82,14 +86,13 @@ def sync_to_local(file_path, db_config):
             reader = csv.DictReader(file)
             for row in reader:
                 time = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
-                app = row['App']
-                stream = row['Stream']
-                requests = int(row['Requests'])
-                unique_users = int(row['Unique Users'])
-                data_sent = int(row['Data Sent (bytes)']) * xfactor
-
                 if time >= last_sync_time_local:
-                    insert_data(cursor_local, time, app, stream, requests, unique_users, data_sent, HOSTNAME)
+                    app = row['App']
+                    stream = row['Stream']
+                    requests = int(row['Requests'])
+                    unique_users = int(row['Unique Users'])
+                    data_sent = int(row['Data Sent (bytes)']) * xfactor
+                    insert_data(cursor_local, time, app, stream, requests, unique_users, data_sent, hostname)
                     rows_synced += 1
 
         conn_local.commit()
@@ -99,7 +102,6 @@ def sync_to_local(file_path, db_config):
     finally:
         if conn_local and conn_local.is_connected():
             conn_local.close()
-
 
 def sync_to_backup(file_path, db_config, hostname):
     """Synchronize data to the backup database."""
@@ -115,13 +117,12 @@ def sync_to_backup(file_path, db_config, hostname):
             reader = csv.DictReader(file)
             for row in reader:
                 time = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
-                app = row['App']
-                stream = row['Stream']
-                requests = int(row['Requests'])
-                unique_users = int(row['Unique Users'])
-                data_sent = int(row['Data Sent (bytes)']) * xfactor
-
                 if time >= last_sync_time_backup:
+                    app = row['App']
+                    stream = row['Stream']
+                    requests = int(row['Requests'])
+                    unique_users = int(row['Unique Users'])
+                    data_sent = int(row['Data Sent (bytes)']) * xfactor
                     insert_data(cursor_backup, time, app, stream, requests, unique_users, data_sent, hostname)
                     rows_synced += 1
 
@@ -133,10 +134,9 @@ def sync_to_backup(file_path, db_config, hostname):
         if conn_backup and conn_backup.is_connected():
             conn_backup.close()
 
-
 if __name__ == "__main__":
     if not os.path.exists(FILE_PATH):
         logging.warning("File data.csv not found. Exiting.")
     else:
-        sync_to_local(FILE_PATH, DB_CONFIG_LOCAL)
+        sync_to_local(FILE_PATH, DB_CONFIG_LOCAL, HOSTNAME)
         sync_to_backup(FILE_PATH, DB_CONFIG_BACKUP, HOSTNAME)
