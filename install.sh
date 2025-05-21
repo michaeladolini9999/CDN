@@ -74,5 +74,4 @@ sudo systemctl enable cms.service
 sudo systemctl enable update_server_startup.service
 #sudo systemctl start update_server_startup.service
 mkdir -p /home/ubuntu/CDN/log
-bash
-sudo reboot
+sudo reboot -h now
