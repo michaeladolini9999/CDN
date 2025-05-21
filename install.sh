@@ -70,8 +70,8 @@ sudo chown ubuntu:ubuntu /var/run/cms
 chmod 755 /var/run/cms
 sudo systemctl daemon-reload
 sudo systemctl enable cms.service
-sudo systemctl start cms.service
+#sudo systemctl start cms.service
 sudo systemctl enable update_server_startup.service
-sudo systemctl start update_server_startup.service
+#sudo systemctl start update_server_startup.service
 mkdir -p /home/ubuntu/CDN/log
-bash
+sudo reboot -h now
