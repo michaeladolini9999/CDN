@@ -73,5 +73,7 @@ sudo systemctl enable cms.service
 #sudo systemctl start cms.service
 sudo systemctl enable update_server_startup.service
 #sudo systemctl start update_server_startup.service
+sudo systemctl disable apt-daily-upgrade.timer
+sudo systemctl disable apt-daily.timer
 mkdir -p /home/ubuntu/CDN/log
 sudo reboot -h now
