@@ -33,10 +33,11 @@ check_new_files() {
 }
 
 delete_old_files() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - Deleting old .ts files"
-    sudo find /var/www/html/hls/*/*/*.ts -maxdepth 1 -mmin +2 -type f -delete
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - Deleting old .m3u8 files"
-    sudo find /var/www/html/hls/*/*/*.m3u8 -maxdepth 1 -mmin +10 -type f -delete
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Deleting old .ts files (older than 30 seconds)"
+    sudo find /var/www/html/hls/*/*/*.ts -maxdepth 1 -type f ! -newermt "$(date -d '30 seconds ago' +'%Y-%m-%d %H:%M:%S')" -delete
+
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Deleting old .m3u8 files (older than 30 seconds)"
+    sudo find /var/www/html/hls/*/*/*.m3u8 -maxdepth 1 -type f ! -newermt "$(date -d '30 seconds ago' +'%Y-%m-%d %H:%M:%S')" -delete
 }
 
 while true; do
