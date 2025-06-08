@@ -22,9 +22,9 @@ class TelegramNotifier:
 
     def get_bot_info(self, app_name, stream_name):
         for app in self.config['apps']:
-            if app[1] == app_name and app[2] == stream_name:
-                chat_id = app[5]
-                bot_token = app[6]
+            if app[2] == app_name and app[3] == stream_name:
+                chat_id = app[6]
+                bot_token = app[7]
                 return bot_token, chat_id
         return None, None  
 

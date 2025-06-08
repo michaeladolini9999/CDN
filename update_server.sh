@@ -6,7 +6,7 @@ current_ip=$(curl -s https://api.ipify.org)
 update_time=$(date '+%Y-%m-%d %H:%M:%S')
 update_time=$(echo "$update_time" | sed 's/ /%20/g')
 
-manager_url="https://script.google.com/macros/s/AKfycbzt0_YlUrNaUnCMsoiYW-Yj3zFuiYgCEuIFRp-XMMMsZGXRhZ8rLNvuyPFUpf7QPhp_DQ/exec"
+manager_url="https://script.google.com/macros/s/AKfycbzAdixaKlAKfK_gowgMN4uxrRjcqKLRU34X9xNLJZFTyztwsrNel5ptaQq0bj6_vvA8vw/exec"
 url="${manager_url}?hostname=${HOSTNAME}&ip=${current_ip}&update_time=${update_time}"
 echo $url
 response=$(curl -L "$url")
@@ -60,15 +60,18 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp -r  /home/ubuntu/CDN/rtmp /var/www/html/
     sudo cp "$config_file" /var/www/html/rtmp/
 
-    grep -oP '\["[^"]+","[^"]+","[^"]+' "$config_file" | while IFS="," read -r _ app_name stream_name; do
-        app_name=$(echo "$app_name" | tr -d '"')
-        stream_name=$(echo "$stream_name" | tr -d '"')
+    jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
+        app_name=$(echo "$pair" | jq -r '.[0]')
+        stream_name=$(echo "$pair" | jq -r '.[1]')
         sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
     done
+
 
     sudo chown -R www-data: /var/www/html
     bash /home/ubuntu/CDN/nginx.sh
     sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+    sudo rm -f /etc/nginx/conf.d/*.conf
+    sudo cp /home/ubuntu/CDN/nginx/conf.d/*.conf /etc/nginx/conf.d/
     sudo cp /home/ubuntu/CDN/nginx/nginx.conf /etc/nginx/nginx.conf
     sudo systemctl restart nginx.service
     cp "$config_file" "$old_config_file"
@@ -93,15 +96,17 @@ else
     else
         sudo cp "$config_file" /var/www/html/rtmp/
 
-        grep -oP '\["[^"]+","[^"]+","[^"]+' "$config_file" | while IFS="," read -r _ app_name stream_name; do
-            app_name=$(echo "$app_name" | tr -d '"')
-            stream_name=$(echo "$stream_name" | tr -d '"')
+        jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
+            app_name=$(echo "$pair" | jq -r '.[0]')
+            stream_name=$(echo "$pair" | jq -r '.[1]')
             sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
         done
 
         sudo chown -R www-data: /var/www/html
         bash /home/ubuntu/CDN/nginx.sh
         sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+        sudo rm -f /etc/nginx/conf.d/*.conf
+        sudo cp /home/ubuntu/CDN/nginx/conf.d/*.conf /etc/nginx/conf.d/
         sudo cp /home/ubuntu/CDN/nginx/nginx.conf /etc/nginx/nginx.conf
         sudo systemctl restart nginx.service
 	cp "$config_file" "$old_config_file"

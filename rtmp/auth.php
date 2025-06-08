@@ -23,11 +23,11 @@ $is_valid = false;
 foreach ($data['apps'] as $app) {
     // Kiểm tra các điều kiện xác thực
     if (
-        isset($app[1], $app[2], $app[3], $app[4]) &&
-        $app[1] === $app_name &&
-        $app[2] === $stream_name &&
-        $app[3] === $user &&
-        (string)$app[4] === $password
+        isset($app[2], $app[3], $app[4], $app[5]) &&
+        $app[2] === $app_name &&
+        $app[3] === $stream_name &&
+        $app[4] === $user &&
+        (string)$app[5] === $password
     ) {
         $is_valid = true;
         break;
