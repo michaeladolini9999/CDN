@@ -6,7 +6,7 @@ current_ip=$(curl -s https://api.ipify.org)
 update_time=$(date '+%Y-%m-%d %H:%M:%S')
 update_time=$(echo "$update_time" | sed 's/ /%20/g')
 
-manager_url="https://script.google.com/macros/s/AKfycbzt0_YlUrNaUnCMsoiYW-Yj3zFuiYgCEuIFRp-XMMMsZGXRhZ8rLNvuyPFUpf7QPhp_DQ/exec"
+manager_url="https://script.google.com/macros/s/AKfycbzAdixaKlAKfK_gowgMN4uxrRjcqKLRU34X9xNLJZFTyztwsrNel5ptaQq0bj6_vvA8vw/exec"
 url="${manager_url}?hostname=${HOSTNAME}&ip=${current_ip}&update_time=${update_time}"
 echo $url
 response=$(curl -L "$url")
