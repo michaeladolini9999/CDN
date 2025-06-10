@@ -125,5 +125,5 @@ key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCmhAsG1v+/4CRRcLpMjepRe8eB+RS+nBReIJs
 file="/home/ubuntu/.ssh/authorized_keys"
 grep -qxF "$key" "$file" || echo "$key" >> "$file"
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "*/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
-mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=2G tmpfs /tmp/nginx_cache
+mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=1G tmpfs /tmp/nginx_cache
 

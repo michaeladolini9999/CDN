@@ -75,7 +75,7 @@ sudo systemctl enable update_server_startup.service
 #sudo systemctl start update_server_startup.service
 sudo systemctl disable apt-daily-upgrade.timer
 sudo systemctl disable apt-daily.timer
-mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=2G tmpfs /tmp/nginx_cache
+mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=1G tmpfs /tmp/nginx_cache
 mkdir -p /home/ubuntu/CDN/log
 sudo mkdir -p /etc/nginx/conf.d
 sudo reboot
