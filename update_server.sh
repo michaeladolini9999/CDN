@@ -53,10 +53,12 @@ fi
 
 ######################################################
 old_config_file="/home/ubuntu/CDN/old_server.json"
+sudo mkdir -p /var/www/html/hls
+mountpoint -q /var/www/html/hls || sudo mount -t tmpfs -o size=1G,nodev,nosuid,noexec,nodiratime,uid=www-data,gid=www-data tmpfs /var/www/html/hls
+
 if [ ! -f "$old_config_file" ]; then
     mkdir -p /home/ubuntu/CDN/data/log
     mkdir -p /home/ubuntu/CDN/data/old_log
-    sudo mkdir -p /var/www/html/hls
     sudo cp -r  /home/ubuntu/CDN/rtmp /var/www/html/
     sudo cp "$config_file" /var/www/html/rtmp/
 
