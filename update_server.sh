@@ -1,6 +1,15 @@
 #!/bin/bash
 
 HOSTNAME=$(hostname)
+for line in \
+"net.ipv6.conf.all.disable_ipv6 = 1" \
+"net.ipv6.conf.default.disable_ipv6 = 1" \
+"net.ipv6.conf.lo.disable_ipv6 = 1"
+do
+    grep -qF "$line" /etc/sysctl.conf || echo "$line" | sudo tee -a /etc/sysctl.conf
+done
+sudo sysctl -p
+sudo ufw disable
 current_ip=$(curl -s https://api.ipify.org)
 
 update_time=$(date '+%Y-%m-%d %H:%M:%S')
