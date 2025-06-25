@@ -1,0 +1,11 @@
+valid_referers server_names
+    ~^(?:https?://)?([^/]*ezball[^/]*)/
+    ~^(?:https?://)?([^/]*sedbergh[^/]*)/
+#    ~sedbergh
+#    ~^(?:https?://)?(?:.*\.)?[^/]*sedbergh[^/]*\.vn(?::\d+)?(?:/.*)?$
+#    *.globalup.site
+    *.livecdn.site;
+
+if ($invalid_referer) {
+    return 404;
+}
