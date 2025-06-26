@@ -178,6 +178,10 @@ server {
         }
     }
 
+    location /hlsplayer {
+        index hlsplayer.html;
+    }
+
     location /statistics {
         rtmp_stat all;
         rtmp_stat_stylesheet stat.xsl;

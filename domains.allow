@@ -2,8 +2,8 @@ valid_referers server_names
     ~^(?:https?://)?([^/]*ezball[^/]*)/
 #    ~^(?:https?://)?([^/]*mailbuild[^/]*)/
 #    ~mailbuild
-    ~^(?:https?://)?(?:.*\.)?[^/]*mailbuild[^/]*\.vn(?::\d+)?(?:/.*)?$;
-#    *.globalup.site
+    ~^(?:https?://)?(?:.*\.)?[^/]*mailbuild[^/]*\.vn(?::\d+)?(?:/.*)?$
+    *.globalup.site;
 
 if ($invalid_referer) {
     return 404;
