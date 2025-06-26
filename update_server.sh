@@ -65,7 +65,7 @@ old_config_file="/home/ubuntu/CDN/old_server.json"
 sudo mkdir -p /var/www/html/hls
 mountpoint -q /var/www/html/hls || sudo mount -t tmpfs -o size=2G,nodev,nosuid,noexec,nodiratime,uid=www-data,gid=www-data tmpfs /var/www/html/hls
 
-sudo cp /home/ubuntu/CDN/hlsplayer.html /var/www/hlmt
+sudo cp /home/ubuntu/CDN/hlsplayer.html /var/www/html
 
 if [ ! -f "$old_config_file" ]; then
     mkdir -p /home/ubuntu/CDN/data/log
