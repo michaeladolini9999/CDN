@@ -109,6 +109,7 @@ server {
     }
 
     location ~ \.ts\$ {
+        include /home/ubuntu/CDN/*.allow;
         try_files \$uri @proxy_ts;
         add_header "Access-Control-Allow-Origin" "*" always;
         add_header "Access-Control-Expose-Headers" "Content-Length";
