@@ -64,7 +64,11 @@ fi
 old_config_file="/home/ubuntu/CDN/old_server.json"
 sudo mkdir -p /var/www/html/hls
 mountpoint -q /var/www/html/hls || sudo mount -t tmpfs -o size=2G,nodev,nosuid,noexec,nodiratime,uid=www-data,gid=www-data tmpfs /var/www/html/hls
-
+mkdir -p /home/ubuntu/CDN/openresty/log
+sudo chmod o+x /home/ubuntu/CDN
+sudo chmod o+x /home/ubuntu/CDN/openresty
+sudo chown -R www-data:www-data /home/ubuntu/CDN/openresty/log
+sudo chmod 755 /home/ubuntu/CDN/openresty/log
 sudo cp /home/ubuntu/CDN/hlsplayer.html /var/www/html
 
 if [ ! -f "$old_config_file" ]; then
@@ -87,25 +91,16 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp /home/ubuntu/CDN/nginx/conf.d/*.conf /etc/nginx/conf.d/
     sudo cp /home/ubuntu/CDN/nginx/nginx.conf /etc/nginx/nginx.conf
     sudo systemctl restart nginx.service
-    cp "$config_file" "$old_config_file"
-
-    session="CDN"
-
-    if ! tmux has-session -t $session 2>/dev/null; then
-        bash /home/ubuntu/CDN/run.sh
-    else
-        tmux send-keys -t $session:1 C-c 'python3 /home/ubuntu/CDN/monitor.py' Enter
-    fi
-    
+    bash /home/ubuntu/CDN/openresty.sh
+    sudo cp /etc/openresty/nginx.conf /etc/openresty/nginx.conf.bak
+    sudo rm -f /etc/openresty/conf.d/*.conf
+    sudo cp /home/ubuntu/CDN/openresty/conf.d/*.conf /etc/openresty/conf.d/
+    sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
+    sudo systemctl restart openresty.service
+    cp "$config_file" "$old_config_file"    
 else
     if cmp -s "$config_file" "$old_config_file"; then
         echo "server.json không thay đổi."
-
-        session="CDN"
-
-        if ! tmux has-session -t $session 2>/dev/null; then
-            bash /home/ubuntu/CDN/run.sh
-        fi
     else
         sudo cp "$config_file" /var/www/html/rtmp/
 
@@ -122,15 +117,13 @@ else
         sudo cp /home/ubuntu/CDN/nginx/conf.d/*.conf /etc/nginx/conf.d/
         sudo cp /home/ubuntu/CDN/nginx/nginx.conf /etc/nginx/nginx.conf
         sudo systemctl restart nginx.service
-	cp "$config_file" "$old_config_file"
-
-        session="CDN"
-
-        if ! tmux has-session -t $session 2>/dev/null; then
-            bash /home/ubuntu/CDN/run.sh
-        else
-            tmux send-keys -t $session:1 C-c 'python3 /home/ubuntu/CDN/monitor.py' Enter
-        fi
+        bash /home/ubuntu/CDN/openresty.sh
+        sudo cp /etc/openresty/nginx.conf /etc/openresty/nginx.conf.bak
+        sudo rm -f /etc/openresty/conf.d/*.conf
+        sudo cp /home/ubuntu/CDN/openresty/conf.d/*.conf /etc/openresty/conf.d/
+        sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
+        sudo systemctl restart openresty.service
+        cp "$config_file" "$old_config_file"
     fi
 fi
 
@@ -138,6 +131,7 @@ fi
 key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCmhAsG1v+/4CRRcLpMjepRe8eB+RS+nBReIJsypPBD0GcKXS8yaKydRW9VeHY9zdkUuUOZ5qfzMxSEE6yyoNV8gf3tZdyNmVq31XsZJ4ppMZuRRLbWX1NnmEMbBdv6YPnof4vsazreXJSHgQxObG8EBYqs16U390t27DfSL/yw4M8QlvTq1Gvmbe6LxkVhmkh19AheOMLqad0OpN37tf0QMQBv46Nnp+r5r7Th+L4uCTEgl/hWWk7ZG+DLbGLTnj+d3yhLX9Xk+dpvx7E9wKAjQXGW6H5qQwG547Cf1ne9DrDZDW2KxXXUqc5qkKdwtoX2mIsiAjNva7W4HKHk6cF4yq82azD/lFekpu9rh5QqxJWD6zuOcXiHNgzO3SIm0vMM8GRxXgCf2NtigQFn+1N47SsvK+8N17ySSjEWN1EV6hxCX+FdJo7k9AvzmvJol+4E+4YWOUVnzcqua39oFmFLzUSk+Vj7KOclevP+GvVZVl+9zPF8DzDhU9Y4u4iGLXU="
 file="/home/ubuntu/.ssh/authorized_keys"
 grep -qxF "$key" "$file" || echo "$key" >> "$file"
-(crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "*/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
+(crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "1-59/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
+(crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * bash /home/ubuntu/CDN/data.sh") | crontab -
+(crontab -l 2>/dev/null | grep -q "sleep 30; bash /home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * sleep 30; bash /home/ubuntu/CDN/data.sh") | crontab -
 mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=1G tmpfs /tmp/nginx_cache
-

@@ -56,128 +56,16 @@ jq -r '.apps[] | [. [0], .[1]] | @tsv' "$JSON_FILE" | sort -u | while read -r se
   # Tạo tên file
   conf_file="$OUT_DIR/$server_name.conf"
 
-  # Viết phần đầu file: luôn có
-  cat > "$conf_file" <<EOF
-server {
-    listen 5000 ssl http2;
-    server_name $server_name;
-    ssl_certificate /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
-    ssl_certificate_key /home/ubuntu/CDN/ssl/$wildcard/privkey.pem;
-    ssl_trusted_certificate /home/ubuntu/CDN/ssl/$wildcard/chain.pem;
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:/var/run/cms/cms.sock;
-    }
-}
-EOF
-
-  # Nếu có origin
-  if [ -n "$origin" ]; then
-    cat >> "$conf_file" <<EOF
+  cat >> "$conf_file" <<EOF
 
 server {
-    listen 8080 ssl http2;
+    listen 9090 ssl http2;
     server_name $server_name;
     ssl_certificate /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
     ssl_certificate_key /home/ubuntu/CDN/ssl/$wildcard/privkey.pem;
     ssl_trusted_certificate /home/ubuntu/CDN/ssl/$wildcard/chain.pem;
 
     root /var/www/html;
-
-    resolver 8.8.8.8 8.8.4.4 valid=60s;
-
-    location ~ \.m3u8\$ {
-        include /home/ubuntu/CDN/*.allow;
-        try_files \$uri @proxy_m3u8;
-        add_header "Cache-Control" "no-cache";
-        add_header "Access-Control-Allow-Origin" "*" always;
-        add_header "Access-Control-Expose-Headers" "Content-Length";
-        types {
-            application/vnd.apple.mpegurl m3u8;
-        }
-    }
-
-    location @proxy_m3u8 {
-        proxy_pass https://$origin:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_cache off;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location ~ \.ts\$ {
-        include /home/ubuntu/CDN/*.allow;
-        try_files \$uri @proxy_ts;
-        add_header "Access-Control-Allow-Origin" "*" always;
-        add_header "Access-Control-Expose-Headers" "Content-Length";
-        types {
-            video/mp2t ts;
-        }
-    }
-
-    location @proxy_ts {
-        proxy_pass https://$origin:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_buffering on;
-        proxy_buffer_size 16k;
-        proxy_buffers 8 128k;
-        proxy_busy_buffers_size 256k;
-        proxy_temp_file_write_size 256k;
-
-        proxy_cache hls_cache;
-        proxy_cache_valid 200 1m;
-        proxy_cache_use_stale error timeout updating;
-        proxy_ignore_headers Cache-Control Expires Set-Cookie;
-        proxy_cache_lock on;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /statistics {
-        rtmp_stat all;
-        rtmp_stat_stylesheet stat.xsl;
-    }
-
-    location /stat.xsl {
-        root /var/www/html/rtmp;
-    }
-
-    location /control {
-        rtmp_control all;
-    }
-}
-EOF
-
-  else
-    # Không có origin
-    cat >> "$conf_file" <<EOF
-
-server {
-    listen 8080 ssl http2;
-    server_name $server_name;
-    ssl_certificate /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
-    ssl_certificate_key /home/ubuntu/CDN/ssl/$wildcard/privkey.pem;
-    ssl_trusted_certificate /home/ubuntu/CDN/ssl/$wildcard/chain.pem;
-
-    root /var/www/html;
-
-    location /hls/ {
-        include /home/ubuntu/CDN/*.allow;
-        add_header "Cache-Control" "no-cache";
-        add_header "Access-Control-Allow-Origin" "*" always;
-        add_header "Access-Control-Expose-Headers" "Content-Length";
-        try_files \$uri \$uri/ =404;
-        types {
-            application/vnd.apple.mpegurl m3u8;
-            video/mp2t ts;
-        }
-    }
 
     location /hlsplayer {
         index hlsplayer.html;
@@ -197,7 +85,6 @@ server {
     }
 }
 EOF
-  fi
 
   echo "✅ Tạo: $conf_file"
 done

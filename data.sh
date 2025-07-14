@@ -40,10 +40,7 @@ delete_old_files() {
     sudo find /var/www/html/hls/*/*/*.m3u8 -maxdepth 1 -type f ! -newermt "$(date -d '30 seconds ago' +'%Y-%m-%d %H:%M:%S')" -delete
 }
 
-while true; do
-    check_and_add_header
-    check_new_files
-    delete_old_files
-    sleep 30
-done
+check_and_add_header
+check_new_files
+delete_old_files
 
