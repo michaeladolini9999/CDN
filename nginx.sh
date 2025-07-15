@@ -67,6 +67,10 @@ server {
 
     root /var/www/html;
 
+    location /hls/ {
+	deny all;
+    }
+
     location /hlsplayer {
         index hlsplayer.html;
     }

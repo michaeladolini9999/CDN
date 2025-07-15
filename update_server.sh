@@ -64,16 +64,15 @@ fi
 old_config_file="/home/ubuntu/CDN/old_server.json"
 sudo mkdir -p /var/www/html/hls
 mountpoint -q /var/www/html/hls || sudo mount -t tmpfs -o size=2G,nodev,nosuid,noexec,nodiratime,uid=www-data,gid=www-data tmpfs /var/www/html/hls
-mkdir -p /home/ubuntu/CDN/openresty/log
+mkdir -p /home/ubuntu/CDN/data/log
+mkdir -p /home/ubuntu/CDN/data/old_log
 sudo chmod o+x /home/ubuntu/CDN
-sudo chmod o+x /home/ubuntu/CDN/openresty
-sudo chown -R www-data:www-data /home/ubuntu/CDN/openresty/log
-sudo chmod 755 /home/ubuntu/CDN/openresty/log
+sudo chmod o+x /home/ubuntu/CDN/data
+sudo chown -R www-data:www-data /home/ubuntu/CDN/data/log
+sudo chmod 755 /home/ubuntu/CDN/data/log
 sudo cp /home/ubuntu/CDN/hlsplayer.html /var/www/html
 
 if [ ! -f "$old_config_file" ]; then
-    mkdir -p /home/ubuntu/CDN/data/log
-    mkdir -p /home/ubuntu/CDN/data/old_log
     sudo cp -r  /home/ubuntu/CDN/rtmp /var/www/html/
     sudo cp "$config_file" /var/www/html/rtmp/
 
