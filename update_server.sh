@@ -66,6 +66,7 @@ sudo mkdir -p /var/www/html/hls
 mountpoint -q /var/www/html/hls || sudo mount -t tmpfs -o size=2G,nodev,nosuid,noexec,nodiratime,uid=www-data,gid=www-data tmpfs /var/www/html/hls
 mkdir -p /home/ubuntu/CDN/data/log
 mkdir -p /home/ubuntu/CDN/data/old_log
+sudo chmod o+x /home/ubuntu
 sudo chmod o+x /home/ubuntu/CDN
 sudo chmod o+x /home/ubuntu/CDN/data
 sudo chown -R www-data:www-data /home/ubuntu/CDN/data/log
