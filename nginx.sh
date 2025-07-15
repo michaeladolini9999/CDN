@@ -59,7 +59,7 @@ jq -r '.apps[] | [. [0], .[1]] | @tsv' "$JSON_FILE" | sort -u | while read -r se
   cat >> "$conf_file" <<EOF
 
 server {
-    listen 9090 ssl http2;
+    listen 8080 ssl http2;
     server_name $server_name;
     ssl_certificate /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
     ssl_certificate_key /home/ubuntu/CDN/ssl/$wildcard/privkey.pem;

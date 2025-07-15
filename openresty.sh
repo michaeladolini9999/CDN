@@ -23,7 +23,7 @@ jq -r '.apps[] | [. [0], .[1]] | @tsv' "$JSON_FILE" | sort -u | while read -r se
     cat >> "$conf_file" <<EOF
 
 server {
-    listen 8080 ssl;
+    listen 9090 ssl;
     http2 on;
     server_name $server_name;
     ssl_certificate     /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
@@ -84,7 +84,7 @@ server {
             stats:incr(base..":unique", 1, 0)
           end
         }
-        proxy_pass https://$origin:8080;
+        proxy_pass https://$origin:9090;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_cache off;
@@ -143,7 +143,7 @@ server {
             stats:incr(base..":unique", 1, 0)
           end
         }
-        proxy_pass https://$origin:8080;
+        proxy_pass https://$origin:9090;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_buffering on;
@@ -170,7 +170,7 @@ EOF
     cat >> "$conf_file" <<EOF
 
 server {
-    listen 8080 ssl;
+    listen 9090 ssl;
     http2 on;
     server_name $server_name;
     ssl_certificate     /home/ubuntu/CDN/ssl/$wildcard/fullchain.pem;
