@@ -7,7 +7,7 @@ OUT_DIR="/home/ubuntu/CDN/openresty/conf.d"
 
 # Đảm bảo thư mục tồn tại
 mkdir -p "$OUT_DIR"
-
+rm -f "$OUT_DIR"/*
 # Trích xuất danh sách cặp [server_name, origin] duy nhất
 jq -r '.apps[] | [. [0], .[1]] | @tsv' "$JSON_FILE" | sort -u | while read -r server_name origin; do
 

@@ -27,7 +27,7 @@ check_new_files() {
         echo "$(date '+%Y-%m-%d %H:%M:%S') - New file detected: $file"
         tail -n +2 "$file" >> "$OUTPUT_FILE"
         echo "$(date '+%Y-%m-%d %H:%M:%S') - Appended $file to $OUTPUT_FILE"
-        mv "$file" "$OLD_DIR/"
+        sudo mv "$file" "$OLD_DIR/"
         echo "$(date '+%Y-%m-%d %H:%M:%S') - Moved $file to $OLD_DIR"
     done
 }
