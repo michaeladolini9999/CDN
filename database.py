@@ -5,6 +5,11 @@ import mysql.connector
 from datetime import datetime
 import configparser
 import logging
+import time
+import random
+
+# === Random delay to avoid simultaneous cron execution across VPS ===
+time.sleep(random.randint(10, 60))
 
 # Configure logging to track synchronization process
 logging.basicConfig(
@@ -24,6 +29,7 @@ DB_CONFIG_LOCAL = {
     'password': config['mysql']['password'],
     'database': config['mysql']['database'],
     'ssl_disabled': config['mysql']['ssl_disabled'],
+    'autocommit': True  # ✅ Enable autocommit
 }
 
 # Backup database configuration
@@ -33,6 +39,7 @@ DB_CONFIG_BACKUP = {
     'password': config['backup']['password'],
     'database': config['backup']['database'],
     'ssl_disabled': config['backup']['ssl_disabled'],
+    'autocommit': True  # ✅ Enable autocommit
 }
 
 FILE_PATH = '/home/ubuntu/CDN/data/data.csv'
@@ -70,8 +77,6 @@ def insert_data(cursor, time, app, stream, requests, unique_users, data_sent, se
         logging.error(f"Error inserting or updating data in the database: {e}")
         raise
 
-
-
 def sync_to_local(file_path, db_config, hostname):
     """Synchronize data to the local database."""
     conn_local = None
@@ -95,7 +100,6 @@ def sync_to_local(file_path, db_config, hostname):
                     insert_data(cursor_local, time, app, stream, requests, unique_users, data_sent, hostname)
                     rows_synced += 1
 
-        conn_local.commit()
         logging.info(f"Successfully synchronized {rows_synced} rows to local database.")
     except Exception as e:
         logging.error(f"Error during local synchronization: {e}")
@@ -126,7 +130,6 @@ def sync_to_backup(file_path, db_config, hostname):
                     insert_data(cursor_backup, time, app, stream, requests, unique_users, data_sent, hostname)
                     rows_synced += 1
 
-        conn_backup.commit()
         logging.info(f"Successfully synchronized {rows_synced} rows to backup database.")
     except Exception as e:
         logging.error(f"Error during backup synchronization: {e}")
