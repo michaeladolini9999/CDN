@@ -1,0 +1,2 @@
+#!/bin/bash
+exec /home/ubuntu/CDN/srs/trunk/objs/ffmpeg/bin/ffmpeg -fflags nobuffer "$@"

@@ -97,7 +97,10 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp /home/ubuntu/CDN/openresty/conf.d/*.conf /etc/openresty/conf.d/
     sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
     sudo systemctl restart openresty.service
-    cp "$config_file" "$old_config_file"    
+    bash /home/ubuntu/CDN/srs_config.sh
+    sudo systemctl enable srs.service
+    sudo systemctl restart srs.service
+    cp "$config_file" "$old_config_file"
 else
     if cmp -s "$config_file" "$old_config_file"; then
         echo "server.json không thay đổi."
@@ -123,6 +126,9 @@ else
         sudo cp /home/ubuntu/CDN/openresty/conf.d/*.conf /etc/openresty/conf.d/
         sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
         sudo systemctl restart openresty.service
+        bash /home/ubuntu/CDN/srs_config.sh
+        sudo systemctl enable srs.service
+        sudo systemctl restart srs.service
         cp "$config_file" "$old_config_file"
     fi
 fi

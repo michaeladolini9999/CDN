@@ -1,6 +1,7 @@
 sudo timedatectl set-timezone Asia/Ho_Chi_Minh
 
 chmod a+x /home/ubuntu/CDN/*.sh
+chmod a+x /home/ubuntu/CDN/ffmpeg
 
 interface=$(ip -4 -o addr show up primary scope global | awk '{print $2}' | head -n 1)
 if [ -z "$interface" ]; then
@@ -28,12 +29,35 @@ fi
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 echo "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/openresty.list
 sudo apt update -y
-sudo apt install gunicorn jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql-server python3 python3-watchdog python3-mysql.connector libssl-dev python3-flask-sqlalchemy python3-flask-bcrypt python3-pandas python3-python-flask-jwt-extended openresty -y
+sudo apt install -y jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql-server python3 python3-watchdog python3-mysql.connector libssl-dev python3-flask-sqlalchemy python3-flask-bcrypt python3-pandas python3-python-flask-jwt-extended openresty build-essential unzip automake cmake pkg-config
 sudo apt remove apache2 -y
 bash mysql.sh
 
-chmod a+x /home/ubuntu/CDN/ulimit.sh
 sudo /home/ubuntu/CDN/ulimit.sh
+
+cd /home/ubuntu/CDN; git clone https://github.com/ossrs/srs.git
+cd /home/ubuntu/CDN/srs/trunk
+./configure
+make -j$(nproc)
+
+sudo bash -c 'cat > /etc/systemd/system/srs.service <<EOF
+[Unit]
+Description=SRS (Simple Realtime Server)
+After=network.target
+
+[Service]
+WorkingDirectory=/home/ubuntu/CDN/srs/trunk
+ExecStart=/home/ubuntu/CDN/srs/trunk/objs/srs -c /home/ubuntu/CDN/srs_ingest.conf
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF'
 
 sudo bash -c 'cat > /etc/systemd/system/update_server_startup.service <<EOF
 [Unit]
