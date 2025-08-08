@@ -1,10 +1,15 @@
 #!/bin/bash
-# Đường dẫn file JSON
+
+# Đường dẫn file JSON và config
 JSON_FILE="/home/ubuntu/CDN/server.json"
 SRS_CONFIG="/home/ubuntu/CDN/srs_ingest.conf"
+TEMP_CONFIG="/tmp/srs_ingest_temp.conf"
 
-# Header config cố định
-cat > "$SRS_CONFIG" <<EOF
+# Biến đếm ingest hợp lệ
+valid_count=0
+
+# Ghi phần đầu vào file tạm
+cat > "$TEMP_CONFIG" <<EOF
 listen              127.0.0.1:1936;
 max_connections     1000;
 daemon              off;
@@ -12,30 +17,47 @@ daemon              off;
 vhost __defaultVhost__ {
 EOF
 
-# Đọc từng dòng apps và tạo khối ingest tương ứng
+# Duyệt từng app
 jq -c '.apps[]' "$JSON_FILE" | while read -r app; do
-    domain=$(echo "$app" | jq -r '.[0]')
     origin=$(echo "$app" | jq -r '.[1]')
     appname=$(echo "$app" | jq -r '.[2]')
     stream=$(echo "$app" | jq -r '.[3]')
 
-    echo "    ingest ${appname,,}/${stream,,} {" >> "$SRS_CONFIG"
-    echo "        enabled     on;" >> "$SRS_CONFIG"
-    echo "        input {" >> "$SRS_CONFIG"
-    echo "            type    stream;" >> "$SRS_CONFIG"
-    echo "            url     rtmp://$origin:1935/$appname/$stream;" >> "$SRS_CONFIG"
-    echo "        }" >> "$SRS_CONFIG"
-    echo "        ffmpeg       /home/ubuntu/CDN/ffmpeg;" >> "$SRS_CONFIG"
-    echo "        engine {" >> "$SRS_CONFIG"
-    echo "            enabled  off;" >> "$SRS_CONFIG"
-    echo "            output   rtmp://127.0.0.1:1936/$appname/$stream;" >> "$SRS_CONFIG"
-    echo "        }" >> "$SRS_CONFIG"
-    echo "    }" >> "$SRS_CONFIG"
-    echo "" >> "$SRS_CONFIG"
+    # Bỏ qua nếu origin rỗng
+    if [[ -z "$origin" || "$origin" == "null" ]]; then
+        continue
+    fi
+
+    # Ghi ingest vào file tạm
+    cat >> "$TEMP_CONFIG" <<EOF
+    ingest ${appname,,}/${stream,,} {
+        enabled     on;
+        input {
+            type    stream;
+            url     rtmp://$origin:1935/$appname/$stream;
+        }
+        ffmpeg       /home/ubuntu/CDN/ffmpeg;
+        engine {
+            enabled  off;
+            output   rtmp://127.0.0.1:1936/$appname/$stream;
+        }
+    }
+
+EOF
+
+    # Tăng số lượng ingest hợp lệ
+    ((valid_count++))
 done
 
-# Footer HLS config cố định
-cat >> "$SRS_CONFIG" <<EOF
+# Nếu không có ingest hợp lệ thì xóa config và dừng SRS
+if [[ $valid_count -eq 0 ]]; then
+    echo "❌ Không tìm thấy ingest nào hợp lệ (origin rỗng). Dừng SRS."
+    sudo systemctl stop srs.service
+    exit 1
+fi
+
+# Ghi phần cuối và thay thế file config chính thức
+cat >> "$TEMP_CONFIG" <<EOF
     hls {
         enabled        on;
         hls_path       /var/www/html/hls;
@@ -47,4 +69,8 @@ cat >> "$SRS_CONFIG" <<EOF
     }
 }
 EOF
-echo "✅ Đã tạo file cấu hình: $SRS_CONFIG"
+
+mv "$TEMP_CONFIG" "$SRS_CONFIG"
+sudo systemctl enable srs.service
+sudo systemctl restart srs.service
+echo "✅ Đã tạo file cấu hình: $SRS_CONFIG với $valid_count ingest hợp lệ và restart srs"

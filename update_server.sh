@@ -98,8 +98,6 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
     sudo systemctl restart openresty.service
     bash /home/ubuntu/CDN/srs_config.sh
-    sudo systemctl enable srs.service
-    sudo systemctl restart srs.service
     cp "$config_file" "$old_config_file"
 else
     if cmp -s "$config_file" "$old_config_file"; then
@@ -127,8 +125,6 @@ else
         sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
         sudo systemctl restart openresty.service
         bash /home/ubuntu/CDN/srs_config.sh
-        sudo systemctl enable srs.service
-        sudo systemctl restart srs.service
         cp "$config_file" "$old_config_file"
     fi
 fi
@@ -139,4 +135,3 @@ file="/home/ubuntu/.ssh/authorized_keys"
 grep -qxF "$key" "$file" || echo "$key" >> "$file"
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "*/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * bash /home/ubuntu/CDN/data.sh") | crontab -
-mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=1G tmpfs /tmp/nginx_cache
