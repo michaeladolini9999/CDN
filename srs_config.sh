@@ -17,14 +17,14 @@ daemon              off;
 vhost __defaultVhost__ {
 EOF
 
-# Duyệt từng app
-jq -c '.apps[]' "$JSON_FILE" | while read -r app; do
+# Duyệt từng app trong JSON (dùng process substitution để tránh subshell)
+while read -r app; do
     origin=$(echo "$app" | jq -r '.[1]')
     appname=$(echo "$app" | jq -r '.[2]')
     stream=$(echo "$app" | jq -r '.[3]')
 
-    # Bỏ qua nếu origin rỗng
-    if [[ -z "$origin" || "$origin" == "null" ]]; then
+    # Bỏ qua nếu thiếu thông tin
+    if [[ -z "$origin" || "$origin" == "null" || -z "$appname" || "$appname" == "null" || -z "$stream" || "$stream" == "null" ]]; then
         continue
     fi
 
@@ -47,16 +47,16 @@ EOF
 
     # Tăng số lượng ingest hợp lệ
     ((valid_count++))
-done
+done < <(jq -c '.apps[]' "$JSON_FILE")
 
 # Nếu không có ingest hợp lệ thì xóa config và dừng SRS
 if [[ $valid_count -eq 0 ]]; then
-    echo "❌ Không tìm thấy ingest nào hợp lệ (origin rỗng). Dừng SRS."
+    echo "❌ Không tìm thấy ingest nào hợp lệ (origin/app/stream rỗng). Dừng SRS."
     sudo systemctl stop srs.service
     exit 1
 fi
 
-# Ghi phần cuối và thay thế file config chính thức
+# Ghi phần cuối của config
 cat >> "$TEMP_CONFIG" <<EOF
     hls {
         enabled        on;
