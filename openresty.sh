@@ -51,7 +51,7 @@ server {
             stats:incr(base..":unique", 1, 0)
           end
         }
-        try_files \$uri \$uri/../index.m3u8 =404;
+        try_files \$uri =404;
         add_header "Cache-Control" "no-cache";
         add_header "Access-Control-Allow-Origin" "*" always;
         add_header "Access-Control-Expose-Headers" "Content-Length";
