@@ -77,10 +77,32 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp -r  /home/ubuntu/CDN/rtmp /var/www/html/
     sudo cp "$config_file" /var/www/html/rtmp/
 
-    jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
-        app_name=$(echo "$pair" | jq -r '.[0]')
-        stream_name=$(echo "$pair" | jq -r '.[1]')
-        sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
+    jq -c '.apps[] | [.[0], .[2], .[3]]' $config_file | while read -r pair; do
+        domain=$(echo "$pair" | jq -r '.[0]')
+        app_name=$(echo "$pair" | jq -r '.[1]')
+        stream_name=$(echo "$pair" | jq -r '.[2]')
+
+        # Tạo thư mục chứa HLS
+        target_dir="/var/www/html/hls/$app_name/$stream_name"
+        sudo mkdir -p "$target_dir"
+
+        # Tạo nội dung playlist.m3u8
+        playlist_file="$target_dir/playlist.m3u8"
+        sudo tee "$playlist_file" > /dev/null <<EOF
+    #EXTM3U
+    #EXT-X-VERSION:3
+    #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
+    https://$domain:9090/hls/$app_name/$stream_name/index.m3u8
+    EOF
+
+        edge_playlist_file="$target_dir/$stream_name-playlist.m3u8"
+        sudo tee "$edge_playlist_file" > /dev/null <<EOF
+    #EXTM3U
+    #EXT-X-VERSION:3
+    #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
+    https://$domain:9090/hls/$app_name/$stream_name/$stream_name-index.m3u8
+    EOF
+
     done
 
 
@@ -98,6 +120,8 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
     sudo systemctl restart openresty.service
     bash /home/ubuntu/CDN/srs_config.sh
+    sudo systemctl enable srs.service
+    sudo systemctl restart srs.service
     cp "$config_file" "$old_config_file"
 else
     if cmp -s "$config_file" "$old_config_file"; then
@@ -105,10 +129,32 @@ else
     else
         sudo cp "$config_file" /var/www/html/rtmp/
 
-        jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
-            app_name=$(echo "$pair" | jq -r '.[0]')
-            stream_name=$(echo "$pair" | jq -r '.[1]')
-            sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
+        jq -c '.apps[] | [.[0], .[2], .[3]]' $config_file | while read -r pair; do
+            domain=$(echo "$pair" | jq -r '.[0]')
+            app_name=$(echo "$pair" | jq -r '.[1]')
+            stream_name=$(echo "$pair" | jq -r '.[2]')
+
+            # Tạo thư mục chứa HLS
+            target_dir="/var/www/html/hls/$app_name/$stream_name"
+            sudo mkdir -p "$target_dir"
+
+            # Tạo nội dung playlist.m3u8
+            playlist_file="$target_dir/playlist.m3u8"
+            sudo tee "$playlist_file" > /dev/null <<EOF
+        #EXTM3U
+        #EXT-X-VERSION:3
+        #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
+        https://$domain:9090/hls/$app_name/$stream_name/index.m3u8
+        EOF
+
+            edge_playlist_file="$target_dir/$stream_name-playlist.m3u8"
+            sudo tee "$edge_playlist_file" > /dev/null <<EOF
+        #EXTM3U
+        #EXT-X-VERSION:3
+        #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
+        https://$domain:9090/hls/$app_name/$stream_name/$stream_name-index.m3u8
+        EOF
+
         done
 
         sudo chown -R www-data: /var/www/html
@@ -125,6 +171,8 @@ else
         sudo cp /home/ubuntu/CDN/openresty/nginx.conf /etc/openresty/nginx.conf
         sudo systemctl restart openresty.service
         bash /home/ubuntu/CDN/srs_config.sh
+        sudo systemctl enable srs.service
+        sudo systemctl restart srs.service
         cp "$config_file" "$old_config_file"
     fi
 fi
@@ -135,3 +183,4 @@ file="/home/ubuntu/.ssh/authorized_keys"
 grep -qxF "$key" "$file" || echo "$key" >> "$file"
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "*/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * bash /home/ubuntu/CDN/data.sh") | crontab -
+mountpoint -q /tmp/nginx_cache || sudo mount -t tmpfs -o size=1G tmpfs /tmp/nginx_cache
