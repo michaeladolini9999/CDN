@@ -77,5 +77,17 @@ EOF
         echo "[OK] Đã tạo $edge_playlist_file"
     else
         echo "[SKIP] Không tìm thấy $edge_index_file"
+        if [ -f "$index_file" ]; then
+            edge_playlist_file="$target_dir/$stream_name-playlist.m3u8"
+            sudo tee "$edge_playlist_file" > /dev/null <<EOF
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
+https://$domain:9090/hls/$app_name/$stream_name/index.m3u8
+EOF
+            echo "[OK] Đã tạo $edge_playlist_file"
+        else
+            echo "[SKIP] Không tìm thấy $index_file"
+        fi
     fi
 done
