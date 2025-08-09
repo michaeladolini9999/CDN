@@ -183,3 +183,4 @@ file="/home/ubuntu/.ssh/authorized_keys"
 grep -qxF "$key" "$file" || echo "$key" >> "$file"
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/database.py") || (crontab -l 2>/dev/null; echo "*/5 * * * * python3 /home/ubuntu/CDN/database.py") | crontab -
 (crontab -l 2>/dev/null | grep -q "/home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * bash /home/ubuntu/CDN/data.sh") | crontab -
+(crontab -l 2>/dev/null | grep -q "sleep 30; bash /home/ubuntu/CDN/data.sh") || (crontab -l 2>/dev/null; echo "* * * * * sleep 30; bash /home/ubuntu/CDN/data.sh") | crontab -
