@@ -77,34 +77,11 @@ if [ ! -f "$old_config_file" ]; then
     sudo cp -r  /home/ubuntu/CDN/rtmp /var/www/html/
     sudo cp "$config_file" /var/www/html/rtmp/
 
-    jq -c '.apps[] | [.[0], .[2], .[3]]' $config_file | while read -r pair; do
-        domain=$(echo "$pair" | jq -r '.[0]')
-        app_name=$(echo "$pair" | jq -r '.[1]')
-        stream_name=$(echo "$pair" | jq -r '.[2]')
-
-        # Tạo thư mục chứa HLS
-        target_dir="/var/www/html/hls/$app_name/$stream_name"
-        sudo mkdir -p "$target_dir"
-
-        # Tạo nội dung playlist.m3u8
-        playlist_file="$target_dir/playlist.m3u8"
-        sudo tee "$playlist_file" > /dev/null <<EOF
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
-https://$domain:9090/hls/$app_name/$stream_name/index.m3u8
-EOF
-
-        edge_playlist_file="$target_dir/$stream_name-playlist.m3u8"
-        sudo tee "$edge_playlist_file" > /dev/null <<EOF
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
-https://$domain:9090/hls/$app_name/$stream_name/$stream_name-index.m3u8
-EOF
-
+    jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
+        app_name=$(echo "$pair" | jq -r '.[0]')
+        stream_name=$(echo "$pair" | jq -r '.[1]')
+        sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
     done
-
 
     sudo chown -R www-data: /var/www/html
     bash /home/ubuntu/CDN/nginx.sh
@@ -129,32 +106,10 @@ else
     else
         sudo cp "$config_file" /var/www/html/rtmp/
 
-        jq -c '.apps[] | [.[0], .[2], .[3]]' $config_file | while read -r pair; do
-            domain=$(echo "$pair" | jq -r '.[0]')
-            app_name=$(echo "$pair" | jq -r '.[1]')
-            stream_name=$(echo "$pair" | jq -r '.[2]')
-
-            # Tạo thư mục chứa HLS
-            target_dir="/var/www/html/hls/$app_name/$stream_name"
-            sudo mkdir -p "$target_dir"
-
-            # Tạo nội dung playlist.m3u8
-            playlist_file="$target_dir/playlist.m3u8"
-            sudo tee "$playlist_file" > /dev/null <<EOF
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
-https://$domain:9090/hls/$app_name/$stream_name/index.m3u8
-EOF
-
-            edge_playlist_file="$target_dir/$stream_name-playlist.m3u8"
-            sudo tee "$edge_playlist_file" > /dev/null <<EOF
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=1920x1080
-https://$domain:9090/hls/$app_name/$stream_name/$stream_name-index.m3u8
-EOF
-
+        jq -c '.apps[] | [.[2], .[3]]' $config_file | while read -r pair; do
+            app_name=$(echo "$pair" | jq -r '.[0]')
+            stream_name=$(echo "$pair" | jq -r '.[1]')
+            sudo mkdir -p "/var/www/html/hls/$app_name/$stream_name"
         done
 
         sudo chown -R www-data: /var/www/html
