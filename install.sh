@@ -29,7 +29,7 @@ fi
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 echo "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/openresty.list
 sudo apt update -y
-sudo apt install -y jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql-server python3 python3-watchdog python3-mysql.connector libssl-dev python3-flask-sqlalchemy python3-flask-bcrypt python3-pandas python3-python-flask-jwt-extended openresty build-essential unzip automake cmake pkg-config
+sudo apt install -y jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql-server python3 python3-watchdog python3-mysql.connector libssl-dev python3-flask-sqlalchemy python3-flask-bcrypt python3-pandas python3-python-flask-jwt-extended openresty build-essential unzip automake cmake pkg-config ffmpeg
 sudo apt remove apache2 -y
 bash mysql.sh
 
