@@ -3,7 +3,7 @@
 NGINX_FILE="/home/ubuntu/CDN/nginx/nginx.conf"
 JSON_FILE="/home/ubuntu/CDN/server.json"
 
-cat /home/ubuntu/CDN/nginx/nginx1.conf > $NGINX_FILE
+cp /home/ubuntu/CDN/nginx/nginx1.conf  $NGINX_FILE
 
 cat <<EOL >> "$NGINX_FILE"
 rtmp {
