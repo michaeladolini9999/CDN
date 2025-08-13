@@ -19,7 +19,6 @@ if id "ubuntu" &>/dev/null; then
     sudo usermod -aG sudo ubuntu
     add_sudoers_line
     sudo usermod -aG adm ubuntu
-    newgrp adm
 else
     echo "[INFO] User 'ubuntu' chưa tồn tại. Đang tạo mới..."
     sudo adduser --disabled-password --gecos "" ubuntu
@@ -27,9 +26,7 @@ else
     sudo usermod -aG sudo ubuntu
     add_sudoers_line
     sudo usermod -aG adm ubuntu
-    newgrp adm
 fi
-
 
 sudo su -l ubuntu <<'EOF'
 cd
