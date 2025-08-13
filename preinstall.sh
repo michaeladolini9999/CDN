@@ -33,4 +33,5 @@ cd
 git clone https://github.com/michaeladolini9999/CDN.git
 cd ~/CDN
 git checkout devluasrs
+bash install.sh
 EOF
