@@ -26,6 +26,8 @@ else
     echo "Hostname is changed to $mac_address (at: $interface)"
 fi
 
+/home/ubuntu/CDN/cloudflare.sh
+
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 echo "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/openresty.list
 sudo apt update -y
