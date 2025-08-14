@@ -25,6 +25,8 @@ else
     echo "Hostname is changed to $mac_address (at: $interface)"
 fi
 
+/home/ubuntu/CDN/cloudflare.sh
+
 sudo apt update -y
 sudo apt install gunicorn jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql-server python3 python3-watchdog python3-mysql.connector libssl-dev python3-flask-sqlalchemy python3-flask-bcrypt python3-pandas python3-python-flask-jwt-extended -y
 sudo apt remove apache2 -y
