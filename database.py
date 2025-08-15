@@ -61,46 +61,46 @@ def get_last_sync_time(cursor, hostname=None):
         logging.error(f"Error retrieving last sync time: {e}")
         raise
 
-def insert_data(cursor, time, app, stream, requests, unique_users, data_sent, server):
-    """Insert or update data into the database."""
-    try:
-        query = """
-        INSERT INTO data (time, server, app, stream, requests, unique_users, data_sent)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE
-            requests = VALUES(requests),
-            unique_users = VALUES(unique_users),
-            data_sent = VALUES(data_sent)
-        """
-        cursor.execute(query, (time, server, app, stream, requests, unique_users, data_sent))
-    except Exception as e:
-        logging.error(f"Error inserting or updating data in the database: {e}")
-        raise
-
 def sync_to_local(file_path, db_config, hostname):
-    """Synchronize data to the local database."""
+    """Synchronize data to the local database (batch insert)."""
     conn_local = None
     try:
         conn_local = mysql.connector.connect(**db_config)
         cursor_local = conn_local.cursor()
 
+        # 1 request: lấy thời điểm sync cuối cùng
         last_sync_time_local = get_last_sync_time(cursor_local)
 
-        rows_synced = 0
+        # Gom dữ liệu vào list
+        data_to_insert = []
         with open(file_path, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                time = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
-                if time >= last_sync_time_local:
+                time_obj = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
+                if time_obj >= last_sync_time_local:
                     app = row['App']
                     stream = row['Stream']
                     requests = int(row['Requests'])
                     unique_users = int(row['Unique Users'])
                     data_sent = int(row['Data Sent (bytes)']) * xfactor
-                    insert_data(cursor_local, time, app, stream, requests, unique_users, data_sent, hostname)
-                    rows_synced += 1
+                    data_to_insert.append(
+                        (time_obj, hostname, app, stream, requests, unique_users, data_sent)
+                    )
 
-        logging.info(f"Successfully synchronized {rows_synced} rows to local database.")
+        if data_to_insert:
+            # 1 request: batch insert/update
+            query = """
+            INSERT INTO data (time, server, app, stream, requests, unique_users, data_sent)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                requests = VALUES(requests),
+                unique_users = VALUES(unique_users),
+                data_sent = VALUES(data_sent)
+            """
+            cursor_local.executemany(query, data_to_insert)
+
+        logging.info(f"Successfully synchronized {len(data_to_insert)} rows to local database.")
+
     except Exception as e:
         logging.error(f"Error during local synchronization: {e}")
     finally:
@@ -108,7 +108,7 @@ def sync_to_local(file_path, db_config, hostname):
             conn_local.close()
 
 def sync_to_backup(file_path, db_config, hostname):
-    """Synchronize data to the backup database."""
+    """Synchronize data to the backup database (batch insert)."""
     conn_backup = None
     try:
         conn_backup = mysql.connector.connect(**db_config)
@@ -116,21 +116,35 @@ def sync_to_backup(file_path, db_config, hostname):
 
         last_sync_time_backup = get_last_sync_time(cursor_backup, hostname)
 
-        rows_synced = 0
+        data_to_insert = []
         with open(file_path, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                time = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
-                if time >= last_sync_time_backup:
+                time_obj = datetime.strptime(row['Time'], "%m/%d/%Y %H:%M")
+                if time_obj >= last_sync_time_backup:
                     app = row['App']
                     stream = row['Stream']
                     requests = int(row['Requests'])
                     unique_users = int(row['Unique Users'])
                     data_sent = int(row['Data Sent (bytes)']) * xfactor
-                    insert_data(cursor_backup, time, app, stream, requests, unique_users, data_sent, hostname)
-                    rows_synced += 1
+                    data_to_insert.append(
+                        (time_obj, hostname, app, stream, requests, unique_users, data_sent)
+                    )
 
-        logging.info(f"Successfully synchronized {rows_synced} rows to backup database.")
+        if data_to_insert:
+            # 1 request: batch insert/update
+            query = """
+            INSERT INTO data (time, server, app, stream, requests, unique_users, data_sent)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                requests = VALUES(requests),
+                unique_users = VALUES(unique_users),
+                data_sent = VALUES(data_sent)
+            """
+            cursor_backup.executemany(query, data_to_insert)
+
+        logging.info(f"Successfully synchronized {len(data_to_insert)} rows to backup database.")
+
     except Exception as e:
         logging.error(f"Error during backup synchronization: {e}")
     finally:
