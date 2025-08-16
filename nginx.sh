@@ -23,7 +23,8 @@ jq -r '.apps[][2]' "$JSON_FILE" | sort -u | while read -r app_name; do
 
         application $app_name {
             live on;
-            on_publish http://127.0.0.1:81/rtmp/;
+            on_publish      http://127.0.0.1:81/rtmp/start.php;
+            on_publish_done http://127.0.0.1:81/rtmp/stop.php;
             hls on;
             hls_path /var/www/html/hls/$app_name;
             hls_cleanup off;
