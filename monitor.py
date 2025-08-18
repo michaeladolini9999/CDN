@@ -9,6 +9,7 @@ import pytz
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from collections import defaultdict
+import threading
 
 class TelegramNotifier:
     def __init__(self, config_file):
@@ -32,6 +33,7 @@ class BandwidthAnalyzer:
     def __init__(self, interval_minutes=5):
         self.interval_minutes = interval_minutes
         self.channel_data = defaultdict(lambda: defaultdict(lambda: {'requests': 0, 'unique_users': set(), 'data_sent': 0}))
+        self.lock = threading.Lock()
 
     def get_time_interval(self, log_time_str):
         log_time = datetime.datetime.strptime(log_time_str, "%d/%b/%Y:%H:%M:%S %z")
@@ -54,12 +56,17 @@ class BandwidthAnalyzer:
                 log_time_str = match.group('datetime')
                 time_interval = self.get_time_interval(log_time_str)
 
-                self.channel_data[time_interval][channel_key]['requests'] += 1
-                self.channel_data[time_interval][channel_key]['unique_users'].add(client_ip)
-                self.channel_data[time_interval][channel_key]['data_sent'] += data_size
+                with self.lock:
+                    self.channel_data[time_interval][channel_key]['requests'] += 1
+                    self.channel_data[time_interval][channel_key]['unique_users'].add(client_ip)
+                    self.channel_data[time_interval][channel_key]['data_sent'] += data_size
 
     def save_data(self):
-        for interval, channels in self.channel_data.items():
+        with self.lock:
+            data_to_save = dict(self.channel_data)
+            self.channel_data.clear()
+
+        for interval, channels in data_to_save.items():
             filename = f"/home/ubuntu/CDN/data/log/bw_{interval}.csv"
             time_str = datetime.datetime.strptime(interval, "%Y-%m-%d_%H-%M").strftime("%m/%d/%Y %H:%M")
 
@@ -69,18 +76,25 @@ class BandwidthAnalyzer:
                     app = channel.split("/")[0]
                     stream = channel.split("/")[1]
                     file.write(f"{time_str},{app},{stream},{data['requests']},{len(data['unique_users'])},{data['data_sent']}\n")
-        self.channel_data.clear()
 
     def check_and_save(self, current_log_time_str):
-        if self.channel_data:
+        with self.lock:
+            has_data = bool(self.channel_data)
+        if has_data:
             current_interval = self.get_time_interval(current_log_time_str)
-            if current_interval not in self.channel_data:
+            with self.lock:
+                need_save = current_interval not in self.channel_data
+            if need_save:
                 self.save_data()
 
     def force_save(self):
-        if self.channel_data:
+        with self.lock:
+            has_data = bool(self.channel_data)
+        if has_data:
             current_interval = self.get_time_interval(datetime.datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).strftime("%d/%b/%Y:%H:%M:%S %z"))
-            if current_interval not in self.channel_data:
+            with self.lock:
+                need_save = current_interval not in self.channel_data
+            if need_save:
                 self.save_data()
 
 class LogProcessor:
