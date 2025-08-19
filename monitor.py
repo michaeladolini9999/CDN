@@ -1,8 +1,6 @@
 import re
-import requests
 import time
 import os
-import configparser
 import datetime
 import json
 import pytz
@@ -10,24 +8,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from collections import defaultdict
 import threading
-
-class TelegramNotifier:
-    def __init__(self, config_file):
-        with open(config_file, 'r') as file:
-            self.config = json.load(file)
-
-    def send_message(self, bot_token, chat_id, message):
-        url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
-        payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
-        requests.post(url, data=payload)
-
-    def get_bot_info(self, app_name, stream_name):
-        for app in self.config['apps']:
-            if app[2] == app_name and app[3] == stream_name:
-                chat_id = app[6]
-                bot_token = app[7]
-                return bot_token, chat_id
-        return None, None  
 
 class BandwidthAnalyzer:
     def __init__(self, interval_minutes=5):
@@ -98,68 +78,15 @@ class BandwidthAnalyzer:
                 self.save_data()
 
 class LogProcessor:
-    def __init__(self, telegram_notifier, bandwidth_analyzer):
-        self.telegram_notifier = telegram_notifier
+    def __init__(self, bandwidth_analyzer):
         self.bandwidth_analyzer = bandwidth_analyzer
-        self.log1_pattern = re.compile(r'(?P<ip>\S+) - - \[(?P<time>.*?)\] "GET (?P<url>.*?) HTTP/1\.0" (?P<status>\d{3}) .*')
-        self.log2_pattern = re.compile(r'(?P<ip>\S+) \[(?P<time>.*?)\] PUBLISH "(?P<app>\S+)" "(?P<stream>\S+)" .*? (?P<bytes_received>\d+) \d+ .* \((?P<session_time>(\d+h\s*)?(\d+m\s*)?(\d+s)?)\)')
         self.request_pattern = re.compile(r'(?P<ip>\d+\.\d+\.\d+\.\d+)\s-\s-\s\[(?P<datetime>[^\]]+)\]\s"(?P<method>\w+)\s(?P<url>[^\s]+)\sHTTP/[^\s]+"\s(?P<status>\d+)\s(?P<bytes_sent>\d+)\s"[^"]*"\s"(?P<user_agent>[^"]+)"')
 
     def process_line(self, line):
-        log1_match = self.log1_pattern.match(line)
-        log2_match = self.log2_pattern.match(line)
         request_match = self.request_pattern.match(line)
-
-        if log1_match:
-            self.process_log1(log1_match)
-        elif log2_match:
-            self.process_log2(log2_match)
-        elif request_match:
+        if request_match:
             self.bandwidth_analyzer.check_and_save(request_match.group('datetime'))
             self.bandwidth_analyzer.analyze_log(request_match)
-
-
-    def process_log1(self, match):
-        status_code = int(match.group('status'))
-        if status_code == 200:
-            time_str = match.group('time')
-            url = match.group('url')
-            app_match = re.search(r'app=([\w\.]+)', url)
-            stream_match = re.search(r'name=([\w\.]+)', url)
-            domain_match = re.search(r'tcurl=rtmp://([^/]+)', url)
-            domain = domain_match.group(1) if domain_match else 'Unknown Domain'
-
-            if app_match and stream_match:
-                app_name = app_match.group(1)
-                stream_name = stream_match.group(1)
-                message = f"{time_str}\nChannel: *{app_name}/{stream_name}* started\nURL: https://{domain}:8080/hls/{app_name}/{stream_name}/index.m3u8"
-                bot_token, chat_id = self.telegram_notifier.get_bot_info(app_name, stream_name)
-                self.telegram_notifier.send_message(bot_token, chat_id, message)
-
-    def process_log2(self, match):
-        session_time = match.group('session_time')
-        if session_time.strip() not in ["0s", "1s", "2s", "3s"]:
-            time_str = match.group('time')
-            time_str1 = datetime.datetime.strptime(time_str, "%d/%b/%Y:%H:%M:%S %z").strftime("%m/%d/%Y %H:%M:%S")
-            app_name = match.group('app')
-            stream_name = match.group('stream')
-            bytes_received = match.group('bytes_received')
-            message = f"{time_str}\nChannel: *{app_name}/{stream_name}* finished\nSession time: {session_time}"
-            bot_token, chat_id = self.telegram_notifier.get_bot_info(app_name, stream_name)
-            self.telegram_notifier.send_message(bot_token, chat_id, message)
-
-            rtmp_csv = '/home/ubuntu/CDN/data/rtmp.csv'
-            directory = os.path.dirname(rtmp_csv)
-            if not os.path.exists(directory):
-                os.makedirs(directory)  
-
-            if not os.path.exists(rtmp_csv):
-                with open(rtmp_csv, 'a') as file:
-                    file.write("Time, App, Stream, Byte received, Session time\n")
-                    file.write(f"{time_str1}, {app_name}, {stream_name}, {bytes_received}, {session_time}\n")
-            else:
-                with open(rtmp_csv, 'a') as file:
-                    file.write(f"{time_str1}, {app_name}, {stream_name}, {bytes_received}, {session_time}\n")
 
 class LogMonitor(FileSystemEventHandler):
     def __init__(self, log_file, log_processor):
@@ -194,16 +121,13 @@ class LogMonitor(FileSystemEventHandler):
             self.log_processor.process_line(line)
         self.last_position = self.file.tell()  
 
-def monitor_log(log_file, server_config_file):
-    telegram_notifier = TelegramNotifier(server_config_file)
+def monitor_log(log_file):
     bandwidth_analyzer = BandwidthAnalyzer()
-    log_processor = LogProcessor(telegram_notifier, bandwidth_analyzer)
+    log_processor = LogProcessor(bandwidth_analyzer)
     log_monitor = LogMonitor(log_file, log_processor)
-
     observer = Observer()
     observer.schedule(log_monitor, path=os.path.dirname(log_file), recursive=False)
     observer.start()
-
     last_check_time = time.time()  
 
     try:
@@ -222,5 +146,4 @@ def monitor_log(log_file, server_config_file):
 
 if __name__ == "__main__":
     log_file_path = "/var/log/nginx/access.log"
-    server_config = "/home/ubuntu/CDN/server.json"
-    monitor_log(log_file_path, server_config)
+    monitor_log(log_file_path)
