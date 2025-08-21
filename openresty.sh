@@ -55,21 +55,23 @@ server {
     location ~ \.m3u8\$ {
         include /home/ubuntu/CDN/*.allow;
         log_by_lua_block {
-          local uri = ngx.var.uri
-          local ip  = ngx.var.remote_addr
+          local uri   = ngx.var.uri
+          local ip    = ngx.var.remote_addr
           local bytes = tonumber(ngx.var.body_bytes_sent) or 0
           local app, stream = uri:match("/hls/([^/]+)/([^/]+)")
           if not app then return end
 
-          local stats = ngx.shared.stats
-          local base = app..":"..stream
+          local active = ngx.shared.meta:get("active_set") or "A"
+          local stats  = ngx.shared["stats_"..active]
+          local ips    = ngx.shared["ip_"..active]
+          local base   = app..":"..stream
 
           stats:incr(base..":requests", 1, 0)
           stats:incr(base..":bytes", bytes, 0)
 
           local ipkey = base..":ip:"..ip
-          if not stats:get(ipkey) then
-            stats:set(ipkey, true)
+          local ok, err = ips:add(ipkey, true)
+          if ok then
             stats:incr(base..":unique", 1, 0)
           end
         }
@@ -85,21 +87,23 @@ server {
     location ~ \.ts\$ {
         include /home/ubuntu/CDN/*.allow;
         log_by_lua_block {
-          local uri = ngx.var.uri
-          local ip  = ngx.var.remote_addr
+          local uri   = ngx.var.uri
+          local ip    = ngx.var.remote_addr
           local bytes = tonumber(ngx.var.body_bytes_sent) or 0
           local app, stream = uri:match("/hls/([^/]+)/([^/]+)")
           if not app then return end
 
-          local stats = ngx.shared.stats
-          local base = app..":"..stream
+          local active = ngx.shared.meta:get("active_set") or "A"
+          local stats  = ngx.shared["stats_"..active]
+          local ips    = ngx.shared["ip_"..active]
+          local base   = app..":"..stream
 
           stats:incr(base..":requests", 1, 0)
           stats:incr(base..":bytes", bytes, 0)
 
           local ipkey = base..":ip:"..ip
-          if not stats:get(ipkey) then
-            stats:set(ipkey, true)
+          local ok, err = ips:add(ipkey, true)
+          if ok then
             stats:incr(base..":unique", 1, 0)
           end
         }
