@@ -4,7 +4,6 @@ LIMIT=100000
 
 # override nginx, openresty, srs...
 OVERRIDE_DIR="/etc/systemd/system/nginx.service.d"
-OVERRIDE_FILE="${OVERRIDE_DIR}/override.conf"
 if [ ! -d "$OVERRIDE_DIR" ]; then
     sudo mkdir -p "$OVERRIDE_DIR"
 fi
