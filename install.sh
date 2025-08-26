@@ -32,7 +32,6 @@ sudo apt install gunicorn jq bmon net-tools libnginx-mod-rtmp php-fpm php  mysql
 sudo apt remove apache2 -y
 bash mysql.sh
 
-chmod a+x /home/ubuntu/CDN/ulimit.sh
 sudo /home/ubuntu/CDN/ulimit.sh
 
 sudo bash -c 'cat > /etc/systemd/system/cms.service <<EOF
