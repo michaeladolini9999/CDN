@@ -52,7 +52,7 @@ WorkingDirectory=/home/ubuntu/CDN/srs/trunk
 ExecStart=/home/ubuntu/CDN/srs/trunk/objs/srs -c /home/ubuntu/CDN/srs_ingest.conf
 Restart=always
 RestartSec=3
-LimitNOFILE=65535
+LimitNOFILE=100000
 
 StandardOutput=journal
 StandardError=journal

@@ -11,7 +11,7 @@ valid_count=0
 # Ghi phần đầu vào file tạm
 cat > "$TEMP_CONFIG" <<EOF
 listen              127.0.0.1:1936;
-max_connections     100000;
+max_connections     50000;
 daemon              off;
 
 vhost __defaultVhost__ {
