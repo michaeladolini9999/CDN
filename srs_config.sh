@@ -66,6 +66,7 @@ cat >> "$TEMP_CONFIG" <<EOF
         hls_on_error   continue;
         hls_m3u8_file  [app]/[stream]/[stream]-index.m3u8;
         hls_ts_file    [app]/[stream]/[stream]-[seq].ts;
+	hls_cleanup off;
     }
 }
 EOF
