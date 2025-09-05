@@ -38,6 +38,7 @@ bash mysql.sh
 sudo /home/ubuntu/CDN/ulimit.sh
 
 cd /home/ubuntu/CDN; git clone https://github.com/ossrs/srs.git
+cd /home/ubuntu/CDN/srs; git checkout 6.0release
 cd /home/ubuntu/CDN/srs/trunk
 ./configure
 make -j$(nproc)
