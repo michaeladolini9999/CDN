@@ -67,7 +67,7 @@ cat >> "$TEMP_CONFIG" <<EOF
         hls_m3u8_file  [app]/[stream]/[stream]-index.m3u8;
         hls_ts_file    [app]/[stream]/[stream]-[seq].ts;
 	hls_cleanup off;
-	hls_dispose 20;
+	hls_dispose 15;
 	hls_wait_keyframe off;
     }
 }
