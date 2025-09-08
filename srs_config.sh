@@ -13,7 +13,10 @@ cat > "$TEMP_CONFIG" <<EOF
 listen              127.0.0.1:1936;
 max_connections     50000;
 daemon              off;
-
+srs_log_tank file;
+srs_log_file /dev/null;
+srs_log_level     error;
+ff_log_dir        /dev/null;
 vhost __defaultVhost__ {
 EOF
 
@@ -66,9 +69,9 @@ cat >> "$TEMP_CONFIG" <<EOF
         hls_on_error   continue;
         hls_m3u8_file  [app]/[stream]/[stream]-index.m3u8;
         hls_ts_file    [app]/[stream]/[stream]-[seq].ts;
-	hls_cleanup off;
-	hls_dispose 15;
-	hls_wait_keyframe off;
+        hls_cleanup off;
+        hls_dispose 15;
+        hls_wait_keyframe off;
     }
 }
 EOF
