@@ -31,13 +31,8 @@ echo "$response" > /home/ubuntu/CDN/server.json
 
 config_file="/home/ubuntu/CDN/server.json"
 
-get_config_value() {
-    local key=$1
-    grep -oP '"'"$key"'"\s*:\s*"\K[^"]+' "$config_file"
-}
-
-bot_token=$(get_config_value "bot_token")
-chat_id=$(get_config_value "chat_id")
+bot_token=$(jq -r '.config.bot_token' "$config_file")
+chat_id=$(jq -r '.config.chat_id' "$config_file")
 
 send_telegram_message() {
     local message=$1
