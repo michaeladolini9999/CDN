@@ -26,6 +26,26 @@ else
     echo "Hostname is changed to $mac_address (at: $interface)"
 fi
 
+#telegram
+source ./telegram.conf
+
+send_telegram() {
+  local MESSAGE="$1"
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+    -d chat_id="${TELEGRAM_CHAT_ID}" \
+    -d "parse_mode=HTML" \
+    --data-urlencode text="${MESSAGE}" > /dev/null
+}
+
+PUBLIC_IP=$(curl -s https://api.ipify.org)
+CURRENT_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
+
+MESSAGE=$(printf "<b>%s INSTALLING SERVER:</b>\n%s - %s" \
+  "$CURRENT_DATETIME" "$(hostname)" "$PUBLIC_IP")
+
+send_telegram "$MESSAGE"
+
+#cloudflare
 /home/ubuntu/CDN/cloudflare.sh
 
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
