@@ -1,2 +1,2 @@
 #!/bin/bash
-exec /home/ubuntu/CDN/srs/trunk/objs/ffmpeg/bin/ffmpeg -fflags nobuffer -rw_timeout 60000000 "$@"
+exec /home/ubuntu/CDN/srs/trunk/objs/ffmpeg/bin/ffmpeg -fflags nobuffer "$@"
