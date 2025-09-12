@@ -29,6 +29,8 @@ echo "$response" > /home/ubuntu/CDN/server.json
 
 ######################################################
 
+bash /home/ubuntu/CDN/update_cloudflare.sh
+
 config_file="/home/ubuntu/CDN/server.json"
 
 bot_token=$(jq -r '.config.bot_token' "$config_file")
