@@ -1,5 +1,6 @@
 #!/bin/bash
 
+chmod a+x /home/ubuntu/CDN/ffmpeg
 # Đường dẫn file JSON và config
 JSON_FILE="/home/ubuntu/CDN/server.json"
 SRS_CONFIG="/home/ubuntu/CDN/srs_ingest.conf"
@@ -55,6 +56,7 @@ done < <(jq -c '.apps[]' "$JSON_FILE")
 # Nếu không có ingest hợp lệ thì xóa config và dừng SRS
 if [[ $valid_count -eq 0 ]]; then
     echo "❌ Không tìm thấy ingest nào hợp lệ (origin/app/stream rỗng). Dừng SRS."
+    rm -rf $SRS_CONFIG
     sudo systemctl stop srs.service
     exit 1
 fi
