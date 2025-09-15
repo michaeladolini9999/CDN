@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-SERVER_JSON="server.json"
+SERVER_JSON="/home/ubuntu/CDN/server.json"
 
 # Lấy IP public
 PUBLIC_IP=$(curl -s https://api.ipify.org)
