@@ -25,7 +25,7 @@ sudo su -l ubuntu <<'EOF'
 cd
 git clone https://github.com/michaeladolini9999/CDN.git
 cd ~/CDN
-git checkout op1
+git checkout op2
 chmod +x *.sh
 /home/ubuntu/CDN/install.sh
 EOF
