@@ -3,6 +3,7 @@ valid_referers server_names
 #    ~^(?:https?://)?([^/]*mailbuild[^/]*)/
 #    ~mailbuild
     ~^(?:https?://)?(?:.*\.)?[^/]*mailbuild[^/]*\.vn(?::\d+)?(?:/.*)?$
+    *.globalup.asia
     *.globalup.site;
 
 if ($invalid_referer) {
