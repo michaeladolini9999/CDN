@@ -58,6 +58,7 @@ if [[ $valid_count -eq 0 ]]; then
     echo "❌ Không tìm thấy ingest nào hợp lệ (origin/app/stream rỗng). Dừng SRS."
     rm -rf $SRS_CONFIG
     sudo systemctl stop srs.service
+    sudo systemctl disable srs.service
     exit 1
 fi
 
