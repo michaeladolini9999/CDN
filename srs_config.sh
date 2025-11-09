@@ -18,6 +18,20 @@ srs_log_tank file;
 srs_log_file /dev/null;
 srs_log_level     error;
 ff_log_dir        /dev/null;
+
+http_server {
+    enabled     on;
+    listen      8888;
+    crossdomain on;
+    
+    https {
+        enabled     on;
+        listen      9999;    
+        key         /home/ubuntu/CDN/ssl/wild.vuaphim.online/privkey.pem;
+        cert        /home/ubuntu/CDN/ssl/wild.vuaphim.online/fullchain.pem;
+    }
+}
+
 vhost __defaultVhost__ {
 EOF
 
@@ -75,6 +89,25 @@ cat >> "$TEMP_CONFIG" <<EOF
         hls_cleanup off;
         hls_dispose 15;
         hls_wait_keyframe off;
+    }
+    
+    http_remux {
+        enabled on;
+        mount   /flv/[app]/[stream].flv;
+        hstrs   on;
+    }
+
+    tcp_nodelay     on;
+    min_latency     on;
+    
+    play {
+        gop_cache       off;
+        queue_length    10;
+        mw_latency      100;
+    }
+    
+    publish {
+        mr off;
     }
 }
 EOF
