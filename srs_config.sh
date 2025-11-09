@@ -27,8 +27,8 @@ http_server {
     https {
         enabled     on;
         listen      9999;    
-        key         /home/ubuntu/CDN/ssl/wild.vuaphim.online/privkey.pem;
-        cert        /home/ubuntu/CDN/ssl/wild.vuaphim.online/fullchain.pem;
+        key         /home/ubuntu/CDN/ssl/wild.globalup.asia/privkey.pem;
+        cert        /home/ubuntu/CDN/ssl/wild.globalup.asia/fullchain.pem;
     }
 }
 
