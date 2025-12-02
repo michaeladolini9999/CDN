@@ -88,7 +88,7 @@ server {
 	resolver 8.8.8.8 8.8.4.4 valid=60s;
 
 	location ~ \.m3u8\$ {
-		include /home/ubuntu/CDN/*.allow;
+#		include /home/ubuntu/CDN/*.allow;
 		try_files \$uri @proxy_m3u8;
 		add_header "Cache-Control" "no-cache";
 		add_header "Access-Control-Allow-Origin" "*" always;
@@ -110,7 +110,7 @@ server {
 	}
 
 	location ~ \.ts\$ {
-		include /home/ubuntu/CDN/*.allow;
+#		include /home/ubuntu/CDN/*.allow;
 		try_files \$uri @proxy_ts;
 		add_header "Access-Control-Allow-Origin" "*" always;
 		add_header "Access-Control-Expose-Headers" "Content-Length";
@@ -169,7 +169,7 @@ server {
 	root /var/www/html;
 
 	location /hls/ {
-		include /home/ubuntu/CDN/*.allow;
+#		include /home/ubuntu/CDN/*.allow;
 		add_header "Cache-Control" "no-cache";
 		add_header "Access-Control-Allow-Origin" "*" always;
 		add_header "Access-Control-Expose-Headers" "Content-Length";
