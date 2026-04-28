@@ -43,6 +43,7 @@ delete_old_files() {
 while true; do
     check_and_add_header
     check_new_files
+    sudo chmod -R 777 /var/www/html/hls/
     delete_old_files
     sleep 30
 done
